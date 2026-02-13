@@ -1,4 +1,4 @@
-# 🔎 Multi-Cluster Observability Architecture with Prometheus, Grafana, Loki and ELK
+# 🔎 Multi-Cluster Observability Architecture with Terraform on Kubernetes
 
 ![observability](arquitetura_project-00.png)
 
@@ -6,7 +6,7 @@
 
 ## 📌 Sobre o Projeto
 
-Este projeto implementa uma arquitetura de observabilidade distribuída baseada em dois clusters Kubernetes isolados em redes separadas:
+Este projeto implementa uma arquitetura de observabilidade distribuída baseada em dois clusters Kubernetes isolados em **VNets separadas**, provisionados e gerenciados via **Terraform**:
 
 - 🟢 **Cluster de Aplicações**
 - 🔵 **Cluster de Observabilidade**
@@ -136,18 +136,90 @@ Logs incluem:
 
 ---
 
-# 📈 Comparação Loki vs ELK
+# 📂 Estrutura de Pastas Recomendada (Terraform)
 
-O projeto permite comparar:
+```
+multi-cluster-observability/
+├── modules/
+│   ├── vpc/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── cluster-app/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── cluster-observability/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── network-peering/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   └── helm-charts/
+│       ├── prometheus/
+│       ├── loki/
+│       └── elasticstack/
+├── environments/
+│   ├── dev/
+│   │   ├── main.tf
+│   │   ├── variables.tfvars
+│   │   └── backend.tf
+│   └── prod/
+│       ├── main.tf
+│       ├── variables.tfvars
+│       └── backend.tf
+├── scripts/
+│   ├── deploy-apps.sh
+│   └── metrics-export.sh
+├── README.md
+└── .gitignore
+```
 
-| Critério | Loki | ELK |
-|----------|------|------|
-| Modelo | Indexa labels | Indexa conteúdo completo |
-| Custo | Mais leve | Mais pesado |
-| Escalabilidade | Alta | Alta |
-| Query | LogQL | DSL |
+**Descrição:**
 
-Objetivo prático: avaliar performance, custo e experiência de consulta.
+- **modules/** – Módulos Terraform para VPCs, clusters Kubernetes e Helm charts  
+- **environments/** – Configurações por ambiente (dev, prod)  
+- **scripts/** – Scripts auxiliares para deploy de apps e coleta de métricas  
+- **README.md** – Documentação do projeto  
+- **.gitignore** – Ignorar arquivos sensíveis e estados do Terraform  
+
+---
+
+# 🚀 Provisionamento com Terraform
+
+## 1️⃣ Inicializar Terraform
+
+```bash
+terraform init
+```
+
+## 2️⃣ Validar e Planejar
+
+```bash
+terraform plan -var-file=variables.tfvars
+```
+
+## 3️⃣ Aplicar Infraestrutura
+
+```bash
+terraform apply -var-file=variables.tfvars --auto-approve
+```
+
+### Recursos Provisionados
+
+- Duas VPCs separadas
+- Clusters Kubernetes gerenciados (EKS ou AKS/GKE)
+- Network Peering entre clusters
+- NSGs/Segurança de rede
+- Helm Charts:
+  - Prometheus Stack
+  - Loki Stack
+  - ELK Stack
+- Aplicações de teste
+- Dashboards Grafana configurados
+- Centralização de logs e métricas
 
 ---
 
@@ -162,43 +234,13 @@ Objetivo prático: avaliar performance, custo e experiência de consulta.
 
 ---
 
-# 🚀 Provisionamento
+# 📈 Resultados Técnicos
 
-Provisionamento pode ser feito via:
-
-- Terraform
-- Azure CLI
-- Helm Charts para stacks
-
-Componentes instalados via:
-
-- Helm (Prometheus Stack)
-- Helm (Loki Stack)
-- Helm (Elastic Stack)
-
----
-
-# 📊 Observabilidade Implementada
-
-Dashboards incluem:
-
-- Taxa de requisições
-- Percentual de erros
-- Latência média
-- Logs por status code
-- Comparativo Loki vs Kibana
-- Consumo de recursos do cluster
-
----
-
-# 🧠 Decisões Técnicas
-
-- Separação física de clusters para simular ambiente enterprise
-- Dupla ingestão de logs para comparação real
-- Métricas e logs desacoplados
-- Uso de Helm para padronização
-- Aplicações leves apenas para geração de carga
-- Estrutura pensada para escalabilidade futura
+✔ Dois clusters isolados e comunicando via peering  
+✔ Logs ingeridos simultaneamente em Loki e ELK  
+✔ Métricas centralizadas  
+✔ Dashboards funcionais  
+✔ Simulação realista de ambiente corporativo  
 
 ---
 
@@ -210,27 +252,19 @@ Dashboards incluem:
 - Segurança em redes segmentadas
 - Remote scraping Prometheus
 - Logs estruturados e correlação
-- Estratégia de monitoramento enterprise
+- Provisionamento automatizado com Terraform
+- Padronização de Helm Charts
 
 ---
 
-# 📈 Resultados Técnicos
+# ⭐ Se este projeto foi útil
 
-✔ Dois clusters isolados e comunicando via peering  
-✔ Logs ingeridos simultaneamente em Loki e ELK  
-✔ Métricas centralizadas  
-✔ Dashboards funcionais  
-✔ Simulação realista de ambiente corporativo  
+Considere:
 
----
-
-# ⭐ Projeto focado em
-
-Cloud Engineer  
-DevOps Engineer  
-SRE  
-Observability Engineer  
+- Dar uma estrela ⭐
+- Compartilhar com sua rede
+- Contribuir com melhorias
 
 ---
 
-> Este projeto demonstra arquitetura multi-cluster com centralização de observabilidade e comparação prática entre Loki e ELK em ambiente isolado.
+> Este projeto demonstra arquitetura multi-cluster com centralização de observabilidade, provisionada com Terraform, comparando Loki e ELK Stack em ambiente isolado.
