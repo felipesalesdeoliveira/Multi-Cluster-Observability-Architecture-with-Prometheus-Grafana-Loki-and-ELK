@@ -9,7 +9,7 @@ resource "aws_vpc" "vpc-multi_cluster_observability" {
 }
 
 resource "aws_internet_gateway" "ig-multi_cluster_observability" {
-  vpc_id = aws_vpc.this.id
+  vpc_id = aws_vpc.vpc-multi_cluster_observability.id
 
   tags = {
     Name = "${var.name}-igw"
@@ -19,7 +19,7 @@ resource "aws_internet_gateway" "ig-multi_cluster_observability" {
 resource "aws_subnet" "public" {
   count = length(var.azs)
 
-  vpc_id                  = aws_vpc.this.id
+  vpc_id                  = aws_vpc.vpc-multi_cluster_observability.id
   cidr_block              = cidrsubnet(var.cidr, 8, count.index)
   availability_zone       = var.azs[count.index]
   map_public_ip_on_launch = true
@@ -32,7 +32,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count = length(var.azs)
 
-  vpc_id            = aws_vpc.this.id
+  vpc_id            = aws_vpc.vpc-multi_cluster_observability.id
   cidr_block        = cidrsubnet(var.cidr, 8, count.index + 10)
   availability_zone = var.azs[count.index]
 
