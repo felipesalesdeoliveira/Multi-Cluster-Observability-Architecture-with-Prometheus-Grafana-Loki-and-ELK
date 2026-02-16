@@ -9,10 +9,4 @@ variable "cidr" {
 variable "azs" {
   type = list(string)
 }
-variable "requester_route_table_id" {
-  type = string
-}
 
-variable "accepter_route_table_id" {
-  type = string
-}

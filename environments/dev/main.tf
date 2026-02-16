@@ -25,3 +25,18 @@ module "vpc_peering" {
   requester_route_table_id = module.vpc_app.private_route_table_id
   accepter_route_table_id  = module.vpc_obs.private_route_table_id
 }
+module "eks_app" {
+  source = "../../modules/eks-cluster"
+
+  cluster_name = "eks-app-dev"
+  vpc_id       = module.vpc_app.vpc_id
+  subnet_ids   = module.vpc_app.private_subnet_ids
+}
+
+module "eks_obs" {
+  source = "../../modules/eks-cluster"
+
+  cluster_name = "eks-obs-dev"
+  vpc_id       = module.vpc_obs.vpc_id
+  subnet_ids   = module.vpc_obs.private_subnet_ids
+}
