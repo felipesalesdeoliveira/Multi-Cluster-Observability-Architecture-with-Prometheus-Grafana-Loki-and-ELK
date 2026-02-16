@@ -1,14 +1,19 @@
-variable "name" {
+variable "vpc_id_requester" {
   type = string
 }
 
-variable "cidr" {
+variable "vpc_id_accepter" {
   type = string
 }
 
-variable "azs" {
-  type = list(string)
+variable "cidr_requester" {
+  type = string
 }
+
+variable "cidr_accepter" {
+  type = string
+}
+
 variable "requester_route_table_id" {
   type = string
 }
