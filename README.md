@@ -6,80 +6,87 @@
 
 ## 📌 Sobre o Projeto
 
-Este projeto implementa uma arquitetura de observabilidade distribuída baseada em dois clusters Kubernetes isolados em **VPCs separadas na AWS**, provisionados e gerenciados via **Terraform**.
+Este projeto implementa uma arquitetura de observabilidade distribuída baseada em dois clusters Kubernetes isolados na AWS, provisionados via Terraform.
 
-Os clusters são executados no **Amazon EKS**.
+Os clusters são executados no Amazon EKS e possuem responsabilidades separadas:
 
-- 🟢 **Application Cluster**
-- 🔵 **Observability Cluster**
+- 🟢 Application Cluster
+- 🔵 Observability Cluster
 
 O objetivo é:
 
-- Gerar logs e métricas em um cluster isolado
-- Exportar esses dados para outro cluster via rede privada
-- Centralizar observabilidade
-- Comparar ingestão e consulta de logs via **Loki** e **ELK Stack**
-- Monitorar métricas com **Prometheus**
-- Visualizar tudo no **Grafana**
-- Simular respostas HTTP 2xx, 4xx e 5xx para validação de alertas
-
-Simula um cenário real corporativo multi-VPC com segregação de responsabilidades.
+- Isolar workloads de aplicação e monitoramento
+- Centralizar métricas e logs
+- Exportar dados do cluster de aplicação para o cluster de observabilidade
+- Monitorar status HTTP (2xx, 4xx, 5xx)
+- Implementar arquitetura realista e modular pronta para ambiente corporativo
 
 ---
 
 # 🏗️ Arquitetura da Solução
 
+A arquitetura é composta por dois clusters EKS independentes, cada um em sua própria VPC simplificada (single-AZ para redução de complexidade e custo).
+
+---
+
 ## 🔵 Cluster 1 – Observability Cluster (EKS)
 
-Provisionado em uma **VPC dedicada**.
+Responsável por centralizar monitoramento e visualização.
 
-Responsável por:
+Componentes implantados via Helm:
 
 - Prometheus
 - Grafana
 - Loki
-- Elasticsearch
-- Logstash
-- Kibana
+- Alertmanager
 
-Recebe métricas e logs remotamente do Application Cluster.
+Funções:
+
+- Receber métricas do Application Cluster
+- Receber logs via Fluent Bit
+- Armazenar séries temporais
+- Criar dashboards e alertas
 
 ---
 
 ## 🟢 Cluster 2 – Application Cluster (EKS)
 
-Provisionado em uma **VPC separada**.
+Responsável por executar workloads de aplicação.
 
-Responsável por:
+Componentes:
 
-- Duas aplicações de teste:
-  - App 1 – Serviço estável (HTTP 200 constante)
-  - App 2 – Serviço com falhas controladas (HTTP 200 / 400 / 500)
-- Exportação de métricas via Prometheus
-- Exportação de logs via:
-  - Promtail → Loki
-  - Filebeat → Logstash
+- Aplicações de teste (App 1 e App 2)
+- Fluent Bit (DaemonSet)
+- Prometheus Exporter
+- ServiceMonitor ou configuração de scrape remoto
 
-Comunicação entre VPCs ocorre via **VPC Peering**.
+Funções:
+
+- Gerar métricas HTTP
+- Gerar logs estruturados
+- Exportar métricas para Prometheus remoto
+- Enviar logs para Loki no cluster de Observabilidade
 
 ---
 
 # 🌐 Topologia de Rede (AWS)
 
-- VPC-App (Application Cluster)
-- VPC-Observability (Monitoring Cluster)
-- VPC Peering configurado
-- Route Tables atualizadas
+Cada cluster possui:
+
+- 1 VPC dedicada
+- 2 subnets (1 pública + 1 privada)
+- 1 NAT Gateway
+- Internet Gateway
+- Route Tables específicas
 - Security Groups restritivos
-- Subnets públicas e privadas
-- NAT Gateway para saída controlada
 
-Segregação garante:
+Clusters se comunicam via:
 
-✔ Isolamento entre workloads  
-✔ Segurança de rede  
-✔ Arquitetura enterprise real  
-✔ Comunicação privada entre clusters  
+- VPC Peering
+ou
+- Endpoint privado configurado entre clusters
+
+Arquitetura simplificada, sem múltiplas AZs e sem excesso de subnets.
 
 ---
 
@@ -87,40 +94,50 @@ Segregação garante:
 
 ## 🔎 Métricas
 
-- Prometheus
-- Node Exporter
-- Kube State Metrics
-- Remote Scraping entre clusters
-- Métricas por status HTTP (2xx, 4xx, 5xx)
-- Error rate por aplicação
+No Application Cluster:
+
+- Prometheus Exporter expõe métricas em `/metrics`
+- Métricas HTTP:
+  - Requests totais
+  - Status 2xx, 4xx, 5xx
+  - Latência
+  - Throughput
+
+No Observability Cluster:
+
+- Prometheus realiza scrape remoto
+- Alertmanager envia alertas para falhas 5xx
+- Grafana consolida dashboards
+
+---
 
 ## 📜 Logs
 
-### Loki Stack
-- Promtail (Application Cluster)
-- Loki (Observability Cluster)
-- Visualização via Grafana
+No Application Cluster:
 
-### ELK Stack
-- Filebeat (Application Cluster)
-- Logstash (Observability Cluster)
-- Elasticsearch
-- Visualização via Kibana
+- Fluent Bit coleta logs de containers
+- Logs estruturados contendo:
+  - Timestamp
+  - Status code
+  - Latência
+  - Pod name
+  - Namespace
+
+Envio de logs para:
+
+- Loki no Observability Cluster
+
+Visualização via Grafana.
 
 ---
 
 # ⚙️ Aplicações de Teste
 
-Duas aplicações simples (Node.js ou .NET):
-
----
-
 ## 🟢 App 1 – Healthy Service
 
 - Endpoint `/health`
-- Retorna **HTTP 200 constantemente**
+- Retorna HTTP 200 constantemente
 - Gera logs estruturados
-- Serve como baseline de comparação
 
 ---
 
@@ -131,52 +148,44 @@ Duas aplicações simples (Node.js ou .NET):
 - ~25% → HTTP 400
 - ~15% → HTTP 500
 
-Logs estruturados contendo:
+Objetivos:
 
-- Timestamp
-- Status code
-- Latência
-- Hostname
-- Correlation ID
-
-Objetivo:
-
-- Validar monitoramento de error rate
-- Criar alertas apenas para 5xx
-- Correlacionar métricas com logs
-- Simular ambiente de produção real
+- Medir error rate
+- Criar alerta apenas para 5xx
+- Validar correlação entre métricas e logs
+- Simular comportamento real de produção
 
 ---
 
 # 🔄 Fluxo de Dados
 
-1️⃣ Aplicação gera log  
-2️⃣ Promtail e Filebeat coletam logs  
-3️⃣ Logs enviados para:
-   - Loki
-   - Logstash → Elasticsearch  
-4️⃣ Aplicações expõem `/metrics`  
-5️⃣ Prometheus realiza scrape remoto  
-6️⃣ Grafana consolida dashboards  
+1️⃣ Aplicação gera requisição  
+2️⃣ Logs coletados pelo Fluent Bit  
+3️⃣ Logs enviados para Loki  
+4️⃣ Aplicação expõe métricas em `/metrics`  
+5️⃣ Prometheus (Observability Cluster) realiza scrape remoto  
+6️⃣ Grafana exibe dashboards consolidados  
 
 ---
 
-# 📂 Estrutura de Pastas Recomendada (Terraform AWS)
+# 📂 Estrutura Recomendada (Terraform)
 
 ```
-multi-cluster-observability-aws/
+multi-cluster-observability/
 ├── modules/
 │   ├── vpc/
-│   ├── eks-cluster/
-│   ├── vpc-peering/
+│   ├── eks/
+│   ├── peering/
 │   ├── iam/
-│   └── helm-charts/
+│   └── helm/
+├── app-manifests/
+│   ├── app1.yaml
+│   ├── app2.yaml
+│   ├── fluentbit.yaml
+│   └── exporter.yaml
 ├── environments/
-│   ├── dev/
-│   └── prod/
-├── scripts/
-│   ├── deploy-apps.sh
-│   └── metrics-export.sh
+│   ├── app/
+│   └── observability/
 ├── README.md
 └── .gitignore
 ```
@@ -194,55 +203,53 @@ terraform init
 ## 2️⃣ Planejar
 
 ```bash
-terraform plan -var-file=variables.tfvars
+terraform plan -var-file=app.tfvars
+terraform plan -var-file=observability.tfvars
 ```
 
 ## 3️⃣ Aplicar
 
 ```bash
-terraform apply -var-file=variables.tfvars --auto-approve
+terraform apply -var-file=observability.tfvars --auto-approve
+terraform apply -var-file=app.tfvars --auto-approve
 ```
 
 ---
 
 # ☁️ Recursos AWS Provisionados
 
-- 2 VPCs
-- Subnets públicas e privadas
-- Internet Gateway
-- NAT Gateway
-- Route Tables
-- VPC Peering
-- Security Groups
-- IAM Roles para EKS (IRSA)
+- 2 VPCs (simples, single-AZ)
 - 2 Clusters Amazon EKS
-- Helm Charts (Prometheus, Loki, ELK)
+- IAM Roles (IRSA habilitado)
+- Security Groups restritivos
+- VPC Peering
+- Helm Charts (Prometheus, Grafana, Loki)
+- Fluent Bit como DaemonSet
 - Aplicações de teste
-- Dashboards Grafana
+- Dashboards e Alertas
 
 ---
 
 # 🔐 Segurança Aplicada
 
-- Clusters em VPCs separadas
-- Comunicação privada via peering
-- Security Groups restritivos
+- Isolamento total entre clusters
+- Comunicação privada entre VPCs
 - IAM Roles for Service Accounts (IRSA)
-- TLS interno
 - RBAC configurado
-- Segregação por subnets privadas
+- Logs e métricas trafegando via rede privada
+- Sem exposição pública de componentes internos
 
 ---
 
 # 📈 Resultados Técnicos
 
-✔ Dois clusters EKS isolados  
-✔ Comunicação privada entre VPCs  
-✔ Logs ingeridos em Loki e ELK simultaneamente  
-✔ Métricas centralizadas  
-✔ Monitoramento de 2xx, 4xx e 5xx  
-✔ Alertas baseados em falhas críticas (5xx)  
-✔ Arquitetura pronta para produção  
+✔ Separação clara entre aplicação e observabilidade  
+✔ Logs centralizados via Fluent Bit + Loki  
+✔ Métricas coletadas via Prometheus Exporter  
+✔ Alertas baseados em erro 5xx  
+✔ Arquitetura modular e escalável  
+✔ Provisionamento 100% automatizado com Terraform  
+✔ Estrutura pronta para ambiente enterprise  
 
 ---
 
@@ -250,11 +257,11 @@ terraform apply -var-file=variables.tfvars --auto-approve
 
 - Arquitetura multi-cluster com Amazon EKS
 - VPC Peering na AWS
-- Segurança com Security Groups e IAM
 - Observabilidade distribuída
 - Remote scraping Prometheus
-- Logs estruturados e correlação
-- Provisionamento automatizado com Terraform
+- Coleta de logs com Fluent Bit
+- Alertas baseados em métricas críticas
+- Terraform modular
 - Deploy automatizado via Helm
 
 ---
@@ -269,4 +276,4 @@ Considere:
 
 ---
 
-> Este projeto demonstra arquitetura multi-cluster na AWS utilizando Amazon EKS, com centralização de observabilidade e simulação de falhas HTTP para validação completa de métricas, logs e alertas em ambiente isolado.
+> Este projeto demonstra uma arquitetura multi-cluster moderna com Amazon EKS, separando workloads de aplicação e observabilidade, centralizando métricas e logs via Prometheus e Fluent Bit em ambiente isolado e automatizado com Terraform.
