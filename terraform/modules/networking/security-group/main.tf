@@ -1,41 +1,26 @@
-resource "aws_security_group" "eks_cluster" {
-  name   = "${var.name}-eks-sg"
+resource "aws_security_group" "cluster_sg" {
+  name   = "${var.name}-cluster-sg"
   vpc_id = var.vpc_id
+
+  tags = var.tags
 }
 
-resource "aws_security_group_rule" "intra_cluster" {
+# Permitir comunicação interna Kubernetes
+resource "aws_security_group_rule" "internal" {
   type              = "ingress"
   from_port         = 0
   to_port           = 65535
   protocol          = "tcp"
-  security_group_id = aws_security_group.eks_cluster.id
-  self              = true
+  cidr_blocks       = [var.vpc_cidr_peer]
+  security_group_id = aws_security_group.cluster_sg.id
 }
-resource "aws_security_group_rule" "allow_from_app" {
-  type                     = "ingress"
-  from_port                = 9090
-  to_port                  = 9090
-  protocol                 = "tcp"
-  security_group_id        = var.obs_sg_id
-  source_security_group_id = var.app_sg_id
-}
-resource "aws_security_group_rule" "allow_obs_to_app" {
-  count = var.app_sg_id != null && var.obs_sg_id != null ? 1 : 0
 
-  type                     = "ingress"
-  from_port                = 9100
-  to_port                  = 9100
-  protocol                 = "tcp"
-  security_group_id        = var.app_sg_id
-  source_security_group_id = var.obs_sg_id
-}
-resource "aws_security_group_rule" "allow_app_to_loki" {
-  count = var.app_sg_id != null && var.obs_sg_id != null ? 1 : 0
-
-  type                     = "ingress"
-  from_port                = 3100
-  to_port                  = 3100
-  protocol                 = "tcp"
-  security_group_id        = var.obs_sg_id
-  source_security_group_id = var.app_sg_id
+# Permitir saída total
+resource "aws_security_group_rule" "egress_all" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.cluster_sg.id
 }

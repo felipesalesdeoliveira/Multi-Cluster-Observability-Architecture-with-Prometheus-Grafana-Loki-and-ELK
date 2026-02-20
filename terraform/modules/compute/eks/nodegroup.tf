@@ -1,38 +1,46 @@
-resource "aws_eks_node_group" "system" {
-  cluster_name    = var.cluster_name
-  node_group_name = "${var.cluster_name}-system"
-  node_role_arn   = var.node_role_arn
-  subnet_ids      = var.private_subnets
+resource "aws_iam_role" "node_role" {
+  name = "${var.cluster_name}-node-role"
 
-  capacity_type = "ON_DEMAND"
-  instance_types = ["t3.medium"]
+  assume_role_policy = data.aws_iam_policy_document.node_assume.json
+}
 
-  scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
-  }
+data "aws_iam_policy_document" "node_assume" {
+  statement {
+    actions = ["sts:AssumeRole"]
 
-  labels = {
-    role = "system"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
   }
 }
-resource "aws_eks_node_group" "spot" {
-  cluster_name    = var.cluster_name
-  node_group_name = "${var.cluster_name}-spot"
-  node_role_arn   = var.node_role_arn
-  subnet_ids      = var.private_subnets
 
-  capacity_type  = "SPOT"
-  instance_types = ["t3.medium", "t3a.medium"]
+resource "aws_iam_role_policy_attachment" "worker_node_policy" {
+  role       = aws_iam_role.node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "cni_policy" {
+  role       = aws_iam_role.node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_role_policy_attachment" "registry_policy" {
+  role       = aws_iam_role.node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_eks_node_group" "this" {
+  cluster_name    = aws_eks_cluster.eks.name
+  node_role_arn   = aws_iam_role.node_role.arn
+  subnet_ids      = var.private_subnet_ids
+  instance_types  = [var.node_instance_type]
 
   scaling_config {
-    desired_size = 1
-    max_size     = 5
-    min_size     = 0
+    desired_size = var.desired_size
+    max_size     = var.max_size
+    min_size     = var.min_size
   }
 
-  labels = {
-    role = "spot"
-  }
+  tags = var.tags
 }

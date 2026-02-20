@@ -1,21 +1,17 @@
 variable "name" {
-  type        = string
-  description = "Prefixo do security group"
+  type = string
 }
 
 variable "vpc_id" {
-  type        = string
-  description = "VPC ID"
+  type = string
 }
 
-variable "app_sg_id" {
+variable "vpc_cidr_peer" {
+  description = "CIDR da VPC que poderá acessar"
   type        = string
-  description = "Security Group do cluster app"
-  default     = null
 }
 
-variable "obs_sg_id" {
-  type        = string
-  description = "Security Group do cluster observability"
-  default     = null
+variable "tags" {
+  type    = map(string)
+  default = {}
 }
