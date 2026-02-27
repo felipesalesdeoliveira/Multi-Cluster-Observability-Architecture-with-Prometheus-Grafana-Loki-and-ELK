@@ -2,6 +2,8 @@ deploymentMode: SingleBinary
 
 loki:
   auth_enabled: false
+  containerSecurityContext:
+    readOnlyRootFilesystem: false
   commonConfig:
     replication_factor: 1
     path_prefix: /tmp/loki
@@ -30,6 +32,12 @@ singleBinary:
   replicas: 1
   persistence:
     enabled: false
+  extraVolumes:
+    - name: loki-data
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: loki-data
+      mountPath: /var/loki
   resources:
     requests:
       cpu: 100m
