@@ -4,9 +4,7 @@ service:
   type: ClusterIP
 
 persistence:
-  enabled: true
-  storageClassName: gp2
-  size: 10Gi
+  enabled: false
 
 datasources:
   datasources.yaml:

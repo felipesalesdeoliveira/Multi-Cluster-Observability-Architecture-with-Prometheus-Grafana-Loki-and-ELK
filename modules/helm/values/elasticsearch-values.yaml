@@ -1,24 +1,21 @@
-master:
-  masterOnly: false
-  replicaCount: 1
-  persistence:
-    enabled: false
-  resources:
-    requests:
-      cpu: 100m
-      memory: 512Mi
-    limits:
-      cpu: 1
-      memory: 2Gi
+replicas: 1
+minimumMasterNodes: 1
 
-data:
-  replicaCount: 0
+esJavaOpts: "-Xms512m -Xmx512m"
 
-ingest:
-  replicaCount: 0
+resources:
+  requests:
+    cpu: "100m"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"
 
-coordinating:
-  replicaCount: 0
-
-sysctlImage:
+persistence:
   enabled: false
+
+protocol: http
+
+esConfig:
+  elasticsearch.yml: |
+    xpack.security.enabled: false

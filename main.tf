@@ -158,7 +158,7 @@ module "elasticsearch" {
   providers = { helm = helm.obs }
 
   name       = "elasticsearch"
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "https://helm.elastic.co"
   chart      = "elasticsearch"
   namespace  = "logging"
   values     = [file("${path.root}/modules/helm/values/elasticsearch-values.yaml")]
