@@ -18,11 +18,23 @@ variable "public_subnet_cidr" {
   type = string
 }
 
+variable "public_subnet_cidr_secondary" {
+  type = string
+}
+
 variable "private_subnet_cidr" {
   type = string
 }
 
+variable "private_subnet_cidr_secondary" {
+  type = string
+}
+
 variable "az" {
+  type = string
+}
+
+variable "az_secondary" {
   type = string
 }
 

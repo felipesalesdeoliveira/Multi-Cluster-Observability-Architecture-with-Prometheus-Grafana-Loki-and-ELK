@@ -13,6 +13,11 @@ variable "az" {
   default = "us-east-1a"
 }
 
+variable "az_secondary" {
+  type    = string
+  default = "us-east-1b"
+}
+
 variable "app_cluster_name" {
   type    = string
   default = "dev-app-cluster"
@@ -33,9 +38,19 @@ variable "app_public_subnet_cidr" {
   default = "10.10.1.0/24"
 }
 
+variable "app_public_subnet_cidr_secondary" {
+  type    = string
+  default = "10.10.3.0/24"
+}
+
 variable "app_private_subnet_cidr" {
   type    = string
   default = "10.10.2.0/24"
+}
+
+variable "app_private_subnet_cidr_secondary" {
+  type    = string
+  default = "10.10.4.0/24"
 }
 
 variable "obs_vpc_cidr" {
@@ -48,9 +63,19 @@ variable "obs_public_subnet_cidr" {
   default = "10.20.1.0/24"
 }
 
+variable "obs_public_subnet_cidr_secondary" {
+  type    = string
+  default = "10.20.3.0/24"
+}
+
 variable "obs_private_subnet_cidr" {
   type    = string
   default = "10.20.2.0/24"
+}
+
+variable "obs_private_subnet_cidr_secondary" {
+  type    = string
+  default = "10.20.4.0/24"
 }
 
 variable "node_instance_type" {

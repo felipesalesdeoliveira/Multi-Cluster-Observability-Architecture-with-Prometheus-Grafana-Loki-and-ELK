@@ -17,14 +17,17 @@ provider "aws" {
 module "app" {
   source = "./environments/app"
 
-  environment         = var.environment
-  cluster_name        = var.app_cluster_name
-  vpc_name            = "${var.environment}-app-vpc"
-  vpc_cidr            = var.app_vpc_cidr
-  public_subnet_cidr  = var.app_public_subnet_cidr
-  private_subnet_cidr = var.app_private_subnet_cidr
-  az                  = var.az
-  peer_vpc_cidr       = var.obs_vpc_cidr
+  environment                   = var.environment
+  cluster_name                  = var.app_cluster_name
+  vpc_name                      = "${var.environment}-app-vpc"
+  vpc_cidr                      = var.app_vpc_cidr
+  public_subnet_cidr            = var.app_public_subnet_cidr
+  public_subnet_cidr_secondary  = var.app_public_subnet_cidr_secondary
+  private_subnet_cidr           = var.app_private_subnet_cidr
+  private_subnet_cidr_secondary = var.app_private_subnet_cidr_secondary
+  az                            = var.az
+  az_secondary                  = var.az_secondary
+  peer_vpc_cidr                 = var.obs_vpc_cidr
 
   node_instance_type   = var.node_instance_type
   desired_size         = var.desired_size
@@ -38,14 +41,17 @@ module "app" {
 module "observability" {
   source = "./environments/observability"
 
-  environment         = var.environment
-  cluster_name        = var.obs_cluster_name
-  vpc_name            = "${var.environment}-observability-vpc"
-  vpc_cidr            = var.obs_vpc_cidr
-  public_subnet_cidr  = var.obs_public_subnet_cidr
-  private_subnet_cidr = var.obs_private_subnet_cidr
-  az                  = var.az
-  peer_vpc_cidr       = var.app_vpc_cidr
+  environment                   = var.environment
+  cluster_name                  = var.obs_cluster_name
+  vpc_name                      = "${var.environment}-observability-vpc"
+  vpc_cidr                      = var.obs_vpc_cidr
+  public_subnet_cidr            = var.obs_public_subnet_cidr
+  public_subnet_cidr_secondary  = var.obs_public_subnet_cidr_secondary
+  private_subnet_cidr           = var.obs_private_subnet_cidr
+  private_subnet_cidr_secondary = var.obs_private_subnet_cidr_secondary
+  az                            = var.az
+  az_secondary                  = var.az_secondary
+  peer_vpc_cidr                 = var.app_vpc_cidr
 
   node_instance_type    = var.node_instance_type
   desired_size          = var.desired_size

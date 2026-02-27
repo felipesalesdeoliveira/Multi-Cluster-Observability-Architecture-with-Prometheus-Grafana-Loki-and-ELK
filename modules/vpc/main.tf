@@ -32,6 +32,17 @@ resource "aws_subnet" "public" {
   })
 }
 
+resource "aws_subnet" "public_secondary" {
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.public_subnet_cidr_secondary
+  availability_zone       = var.az_secondary
+  map_public_ip_on_launch = true
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-public-secondary"
+  })
+}
+
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = var.private_subnet_cidr
@@ -39,6 +50,16 @@ resource "aws_subnet" "private" {
 
   tags = merge(var.tags, {
     Name = "${var.name}-private"
+  })
+}
+
+resource "aws_subnet" "private_secondary" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = var.private_subnet_cidr_secondary
+  availability_zone = var.az_secondary
+
+  tags = merge(var.tags, {
+    Name = "${var.name}-private-secondary"
   })
 }
 
@@ -74,6 +95,11 @@ resource "aws_route_table_association" "public_assoc" {
   route_table_id = aws_route_table.public.id
 }
 
+resource "aws_route_table_association" "public_secondary_assoc" {
+  subnet_id      = aws_subnet.public_secondary.id
+  route_table_id = aws_route_table.public.id
+}
+
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.vpc.id
 }
@@ -86,5 +112,10 @@ resource "aws_route" "private_nat" {
 
 resource "aws_route_table_association" "private_assoc" {
   subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "private_secondary_assoc" {
+  subnet_id      = aws_subnet.private_secondary.id
   route_table_id = aws_route_table.private.id
 }
