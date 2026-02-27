@@ -87,7 +87,7 @@ data "aws_eks_cluster_auth" "obs" {
 provider "helm" {
   alias = "app"
 
-  kubernetes {
+  kubernetes = {
     host                   = data.aws_eks_cluster.app.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.app.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.app.token
@@ -97,7 +97,7 @@ provider "helm" {
 provider "helm" {
   alias = "obs"
 
-  kubernetes {
+  kubernetes = {
     host                   = data.aws_eks_cluster.obs.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.obs.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.obs.token
