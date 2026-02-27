@@ -1,0 +1,23 @@
+adminUser: admin
+adminPassword: "admin"
+service:
+  type: ClusterIP
+
+persistence:
+  enabled: true
+  storageClassName: gp2
+  size: 10Gi
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+      isDefault: true
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.logging.svc.cluster.local

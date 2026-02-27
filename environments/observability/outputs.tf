@@ -1,0 +1,12 @@
+output "cluster_name" { value = module.eks.cluster_name }
+output "cluster_endpoint" { value = module.eks.cluster_endpoint }
+output "cluster_ca" { value = module.eks.cluster_ca }
+output "oidc_issuer" { value = module.eks.oidc_issuer }
+output "oidc_provider_arn" { value = aws_iam_openid_connect_provider.this.arn }
+output "vpc_id" { value = module.vpc.vpc_id }
+output "vpc_cidr" { value = module.vpc.vpc_cidr }
+output "public_subnet_id" { value = module.vpc.public_subnet_id }
+output "private_subnet_id" { value = module.vpc.private_subnet_id }
+output "private_route_table_id" { value = module.vpc.private_route_table_id }
+output "security_group_id" { value = aws_security_group.cluster_sg.id }
+output "prometheus_irsa_role_arn" { value = module.irsa_prometheus.role_arn }

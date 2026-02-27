@@ -1,0 +1,14 @@
+serviceAccount:
+  create: true
+  name: fluent-bit
+
+config:
+  outputs: |
+    [OUTPUT]
+        Name              loki
+        Match             *
+        Host              REPLACE_WITH_PRIVATE_LOKI_ENDPOINT
+        Port              80
+        labels            job=fluent-bit,cluster=application
+        line_format       json
+        auto_kubernetes_labels on
