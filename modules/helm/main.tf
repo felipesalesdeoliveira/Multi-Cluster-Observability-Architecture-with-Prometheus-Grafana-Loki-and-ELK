@@ -8,4 +8,6 @@ resource "helm_release" "this" {
   values           = var.values
   timeout          = var.timeout
   wait             = var.wait
+  atomic           = var.atomic
+  cleanup_on_fail  = var.cleanup_on_fail
 }

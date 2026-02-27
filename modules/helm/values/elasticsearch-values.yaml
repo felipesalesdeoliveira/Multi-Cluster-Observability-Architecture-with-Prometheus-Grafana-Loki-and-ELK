@@ -2,8 +2,14 @@ master:
   masterOnly: false
   replicaCount: 1
   persistence:
-    enabled: true
-    size: 20Gi
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 2Gi
 
 data:
   replicaCount: 0
