@@ -14,7 +14,7 @@ resources:
 persistence:
   enabled: false
 
-protocol: http
+protocol: https
 
 esConfig:
   elasticsearch.yml: |

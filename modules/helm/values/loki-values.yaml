@@ -16,6 +16,15 @@ loki:
           period: 24h
   storage:
     type: filesystem
+  rulerConfig:
+    storage:
+      type: local
+      local:
+        directory: /tmp/loki/rules
+    rule_path: /tmp/loki/rules-tmp
+    enable_api: false
+  extraArgs:
+    - -config.expand-env=true
 
 singleBinary:
   replicas: 1
@@ -46,3 +55,7 @@ chunksCache:
 
 resultsCache:
   enabled: false
+
+sidecar:
+  rules:
+    enabled: false
