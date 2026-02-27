@@ -69,19 +69,23 @@ module "peering" {
 }
 
 data "aws_eks_cluster" "app" {
-  name = module.app.cluster_name
+  name       = module.app.cluster_name
+  depends_on = [module.app]
 }
 
 data "aws_eks_cluster_auth" "app" {
-  name = module.app.cluster_name
+  name       = module.app.cluster_name
+  depends_on = [module.app]
 }
 
 data "aws_eks_cluster" "obs" {
-  name = module.observability.cluster_name
+  name       = module.observability.cluster_name
+  depends_on = [module.observability]
 }
 
 data "aws_eks_cluster_auth" "obs" {
-  name = module.observability.cluster_name
+  name       = module.observability.cluster_name
+  depends_on = [module.observability]
 }
 
 provider "helm" {
