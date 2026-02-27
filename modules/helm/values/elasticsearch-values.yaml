@@ -1,0 +1,18 @@
+master:
+  masterOnly: false
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 20Gi
+
+data:
+  replicaCount: 0
+
+ingest:
+  replicaCount: 0
+
+coordinating:
+  replicaCount: 0
+
+sysctlImage:
+  enabled: false

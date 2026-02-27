@@ -143,6 +143,19 @@ module "loki" {
   depends_on = [module.observability]
 }
 
+module "elasticsearch" {
+  source    = "./modules/helm"
+  providers = { helm = helm.obs }
+
+  name       = "elasticsearch"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "elasticsearch"
+  namespace  = "logging"
+  values     = [file("${path.root}/modules/helm/values/elasticsearch-values.yaml")]
+
+  depends_on = [module.observability]
+}
+
 module "fluent_bit" {
   source    = "./modules/helm"
   providers = { helm = helm.app }
