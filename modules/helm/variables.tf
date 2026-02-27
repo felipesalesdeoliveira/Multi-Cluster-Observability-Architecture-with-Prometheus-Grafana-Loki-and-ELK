@@ -10,7 +10,7 @@ variable "chart" {
   type = string
 }
 
-variable "version" {
+variable "chart_version" {
   type    = string
   default = null
 }
