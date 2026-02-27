@@ -6,4 +6,6 @@ resource "helm_release" "this" {
   namespace        = var.namespace
   create_namespace = var.create_namespace
   values           = var.values
+  timeout          = var.timeout
+  wait             = var.wait
 }

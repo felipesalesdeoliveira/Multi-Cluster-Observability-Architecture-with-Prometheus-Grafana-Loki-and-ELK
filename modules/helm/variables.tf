@@ -28,3 +28,13 @@ variable "values" {
   type    = list(string)
   default = []
 }
+
+variable "timeout" {
+  type    = number
+  default = 1200
+}
+
+variable "wait" {
+  type    = bool
+  default = true
+}
